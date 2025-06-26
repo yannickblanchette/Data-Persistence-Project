@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,12 +12,17 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
+
+    private string m_playerName = "";
+    private string m_bestScoreName = "";
+    private int m_bestScore = 0;
 
     
     // Start is called before the first frame update
@@ -36,6 +42,9 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        InitScoreText();
+        SetBestScore();
     }
 
     private void Update()
@@ -65,12 +74,44 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        m_playerName = GameManager.instance.playerName;
+        ScoreText.text = $"Score : {m_playerName} : {m_Points}";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        
+        if (CalculateIfNewBestScore())
+        {
+            m_bestScoreName = m_playerName;
+            m_bestScore = m_Points;
+            GameManager.instance.SetBestScore(m_bestScore, m_playerName);
+            GameManager.instance.SaveGameData();
+        }
     }
+
+
+    public void InitScoreText()
+    {
+        m_Points = 0;
+        m_playerName = GameManager.instance.playerName;
+        ScoreText.text = $"Score : {m_playerName} : {m_Points}";
+    }
+
+
+    public bool CalculateIfNewBestScore()
+    {
+        return m_Points > m_bestScore;
+    }
+
+
+    public void SetBestScore()
+    {
+        m_bestScore = GameManager.instance.bestScore;
+        m_bestScoreName = GameManager.instance.bestScoreName;
+        BestScoreText.text = $"Best Score : {m_bestScoreName} : {m_bestScore}";
+    }
+
 }
